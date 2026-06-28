@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DTF Pro Tool - Web Version</title>
+    <title>DTF Pro Tool & AI Cartoonizer</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,12 +21,13 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             text-align: center;
         }
         h1 { color: #f5c2e7; margin-top: 0; font-size: 24px; }
-        .section { margin: 20px 0; text-align: left; }
+        h2 { color: #94e2d5; font-size: 18px; text-align: left; margin-top: 25px; border-bottom: 1px solid #45475a; padding-bottom: 5px; }
+        .section { margin: 15px 0; text-align: left; }
         label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
         input[type="file"], select, input[type="range"] {
             width: 100%;
@@ -37,49 +38,68 @@
             color: #cdd6f4;
             box-sizing: border-box;
         }
-        .radio-group { display: flex; gap: 15px; }
-        .radio-label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .radio-group { display: flex; gap: 15px; flex-wrap: wrap; }
+        .radio-label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px; }
         .btn {
-            background-color: #a6e3a1;
             color: #11111b;
             border: none;
-            padding: 14px;
+            padding: 12px;
             width: 100%;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
-            margin-top: 15px;
+            margin-top: 10px;
         }
-        .btn:hover { background-color: #94e2d5; }
-        .btn:disabled { background-color: #585b70; cursor: not-allowed; }
-        #status { margin-top: 15px; font-weight: bold; color: #f9e2af; }
+        .btn-ai { background-color: #cba6f7; }
+        .btn-ai:hover { background-color: #f5c2e7; }
+        .btn-dtf { background-color: #a6e3a1; margin-top: 20px; padding: 14px; font-size: 16px; }
+        .btn-dtf:hover { background-color: #94e2d5; }
+        .btn:disabled { background-color: #585b70; color: #a6adc8; cursor: not-allowed; }
+        #status { margin-top: 15px; font-weight: bold; color: #f9e2af; font-size: 14px; }
+        .preview-box { max-height: 200px; overflow: hidden; margin-top: 10px; border-radius: 6px; display: none; }
+        .preview-box img { width: 100%; height: auto; object-fit: contain; }
     </style>
+
+    <script type="module">
+        import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.0';
+        window.pipeline = pipeline;
+    </script>
 </head>
 <body>
 
 <div class="container">
-    <h1>🖨️ DTF Web Tool (Ottimizzato Maintop)</h1>
-    <p style="font-size: 13px; color: #a6adc8;">Rimuovi il fondo e applica la retinatura direttamente nel browser</p>
+    <h1>🖨️ DTF Tool + AI Cartoon Studio</h1>
+    <p style="font-size: 13px; color: #a6adc8; margin-bottom: 20px;">Carica la foto, trasformala in fumetto con l'IA e preparala per Maintop.</p>
 
     <div class="section">
-        <label for="imageLoader">Seleziona Immagine (PNG, JPG):</label>
+        <label for="imageLoader">Carica la tua foto di partenza:</label>
         <input type="file" id="imageLoader" accept="image/*">
+        <div class="preview-box" id="previewContainer">
+            <img id="srcPreview" src="#" alt="Anteprima">
+        </div>
     </div>
 
+    <h2>Fase 1: Effetto Fumetto Professionale (IA)</h2>
+    <div class="section">
+        <button class="btn btn-ai" id="btnAi">⚡ Trasforma in Fumetto Vettoriale</button>
+    </div>
+
+    <h2>Fase 2: Ottimizzazione e Retinatura DTF</h2>
+    
     <div class="section">
         <label>1. Tipo di Capo / Colore da rimuovere:</label>
         <div class="radio-group">
-            <label class="radio-label"><input type="radio" name="modalita" value="nero" checked> Capo Scuri (Rimuovi Nero)</label>
-            <label class="radio-label"><input type="radio" name="modalita" value="bianco"> Capo Chiari (Rimuovi Bianco)</label>
+            <label class="radio-label"><input type="radio" name="modalita" value="nero" checked> Capo Scuro (Rimuovi Nero)</label>
+            <label class="radio-label"><input type="radio" name="modalita" value="bianco"> Capo Chiaro (Rimuovi Bianco)</label>
         </div>
     </div>
 
     <div class="section">
         <label>2. Tecnica di Sfumatura:</label>
         <div class="radio-group">
-            <label class="radio-label"><input type="radio" name="tecnica" value="ibrida" checked id="techIbrida"> Rasterizzazione Ibrida</label>
+            <label class="radio-label"><input type="radio" name="tecnica" value="ibrida" checked id="techIbrida"> Rasterizzazione Ibrida (Maintop)</label>
             <label class="radio-label"><input type="radio" name="tecnica" value="classica"> Trasparenza Classica</label>
         </div>
     </div>
@@ -94,24 +114,84 @@
         <input type="range" id="sliderPunti" min="2" max="8" step="1" value="4">
     </div>
 
-    <button class="btn" id="btnElabora">Elabora e Scarica PNG</button>
+    <button class="btn btn-dtf" id="btnElabora">Genera e Scarica PNG per Maintop</button>
     <div id="status"></div>
 </div>
 
 <script>
+    let c_image = null; // Memorizza l'immagine attualmente attiva (originale o cartoonizzata)
+    let aiModel = null;
+
     const imageLoader = document.getElementById('imageLoader');
+    const previewContainer = document.getElementById('previewContainer');
+    const srcPreview = document.getElementById('srcPreview');
+    const btnAi = document.getElementById('btnAi');
+    const btnElabora = document.getElementById('btnElabora');
+    const status = document.getElementById('status');
     const sliderTolleranza = document.getElementById('sliderTolleranza');
     const sliderPunti = document.getElementById('sliderPunti');
     const lblTolleranza = document.getElementById('lblTolleranza');
     const lblPunti = document.getElementById('lblPunti');
-    const btnElabora = document.getElementById('btnElabora');
-    const status = document.getElementById('status');
     const secPunti = document.getElementById('secPunti');
 
-    // Gestione aggiornamento etichette grafiche
+    // Mostra l'anteprima quando si carica il file
+    imageLoader.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                c_image = new Image();
+                c_image.onload = function() {
+                    srcPreview.src = event.target.result;
+                    previewContainer.style.display = 'block';
+                    status.innerText = "Immagine caricata. Pronte le fasi 1 e 2.";
+                };
+                c_image.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Fase 1: Elaborazione tramite Intelligenza Artificiale
+    btnAi.addEventListener('click', async () => {
+        if (!c_image) { alert("Carica prima un'immagine!"); return; }
+        
+        try {
+            btnAi.disabled = true;
+            status.innerText = "Inizializzazione Modello IA (Solo la prima volta potrebbe richiedere 30 secondi)...";
+
+            // Carichiamo il modello di stilizzazione se non è già presente in memoria
+            if (!aiModel) {
+                // Utilizziamo un pipeline di image-to-image specializzato in stili cartoon
+                aiModel = await window.pipeline('image-to-image', 'Xenova/AnimeGAN2-paprika');
+            }
+
+            status.innerText = "L'IA sta ridisegnando la foto in stile fumetto...";
+            
+            // Eseguiamo la trasformazione dell'immagine
+            const result = await aiModel(srcPreview.src);
+            
+            // Aggiorniamo l'anteprima visiva col risultato dell'IA
+            srcPreview.src = result.canvas.toDataURL();
+            
+            // Sostituiamo l'immagine attiva con quella fumettata
+            c_image = new Image();
+            c_image.onload = () => {
+                status.innerText = "Foto trasformata in Fumetto con successo! Ora puoi procedere alla Fase 2.";
+                btnAi.disabled = false;
+            };
+            c_image.src = srcPreview.src;
+
+        } catch (err) {
+            console.error(err);
+            status.innerText = "Errore durante l'elaborazione IA. Assicurati di essere connesso a internet.";
+            btnAi.disabled = false;
+        }
+    });
+
+    // Controllo UI Sliders
     sliderTolleranza.addEventListener('input', (e) => lblTolleranza.innerText = `Intensità del 'Buco' (Tolleranza): ${parseFloat(e.target.value).toFixed(1)}`);
     sliderPunti.addEventListener('input', (e) => lblPunti.innerText = `Dimensione Punti Retinatura: ${e.target.value} px`);
-    
     document.getElementsByName('tecnica').forEach(radio => {
         radio.addEventListener('change', (e) => {
             secPunti.style.opacity = e.target.value === 'classica' ? '0.4' : '1';
@@ -119,130 +199,93 @@
         });
     });
 
+    // Fase 2: Elaborazione finale DTF e Download
     btnElabora.addEventListener('click', () => {
-        if (!imageLoader.files[0]) {
-            alert("Per favore, seleziona prima un'immagine!");
-            return;
-        }
+        if (!c_image) { alert("Seleziona o elabora un'immagine prima!"); return; }
 
-        status.innerText = "Elaborazione in corso...";
+        status.innerText = "Preparazione file per Maintop...";
         btnElabora.disabled = true;
 
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                // Creiamo un canvas nascosto in memoria delle stesse dimensioni dell'immagine originale
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
+        setTimeout(() => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = c_image.width;
+            canvas.height = c_image.height;
+            ctx.drawImage(c_image, 0, 0);
 
-                // Estraiamo la mappa dei pixel RGBA
-                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const pixels = imgData.data;
-                const width = canvas.width;
-                const height = canvas.height;
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imgData.data;
+            const width = canvas.width;
+            const height = canvas.height;
 
-                // Parametri scelti dall'utente
-                const modalita = document.querySelector('input[name="modalita"]:checked').value;
-                const tecnica = document.querySelector('input[name="tecnica"]:checked').value;
-                const tolleranza = parseFloat(sliderTolleranza.value);
-                const dimPunto = parseInt(sliderPunti.value);
+            const modalita = document.querySelector('input[name="modalita"]:checked').value;
+            const tecnica = document.querySelector('input[name="tecnica"]:checked').value;
+            const tolleranza = parseFloat(sliderTolleranza.value);
+            const dimPunto = parseInt(sliderPunti.value);
 
-                // 1. Calcoliamo la matrice dell'opacità teorica (Alpha)
-                const matriceAlpha = new Int32Array(width * height);
-                for (let i = 0; i < pixels.length; i += 4) {
-                    const r = pixels[i];
-                    const g = pixels[i+1];
-                    const b = pixels[i+2];
-                    const a = pixels[i+3];
+            const matriceAlpha = new Int32Array(width * height);
+            for (let i = 0; i < pixels.length; i += 4) {
+                const r = pixels[i];
+                const g = pixels[i+1];
+                const b = pixels[i+2];
+                const a = pixels[i+3];
 
-                    if (a === 0) {
-                        matriceAlpha[i/4] = 0;
-                        continue;
-                    }
+                if (a === 0) { matriceAlpha[i/4] = 0; continue; }
 
-                    const luminanza = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
-                    let nuovoAlpha;
-                    if (modalita === 'nero') {
-                        nuovoAlpha = Math.floor(a * Math.pow(luminanza, 1 / tolleranza));
-                    } else {
-                        nuovoAlpha = Math.floor(a * Math.pow(1.0 - luminanza, 1 / tolleranza));
-                    }
-                    matriceAlpha[i/4] = nuovoAlpha;
-                }
+                const luminanza = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+                let nuovoAlpha = modalita === 'nero' ? 
+                    Math.floor(a * Math.pow(luminanza, 1 / tolleranza)) : 
+                    Math.floor(a * Math.pow(1.0 - luminanza, 1 / tolleranza));
+                matriceAlpha[i/4] = nuovoAlpha;
+            }
 
-                // 2. Applichiamo l'effetto basato sulla tecnica
-                if (tecnica === 'classica') {
-                    for (let i = 0; i < pixels.length; i += 4) {
-                        pixels[i+3] = matriceAlpha[i/4];
-                    }
-                    ctx.putImageData(imgData, 0, 0);
-                } else {
-                    // LOGICA IBRIDA OTTIMIZZATA PER MAINTOP
-                    // Puliamo il canvas per ridisegnare da zero con trasparenza totale
-                    ctx.clearRect(0, 0, width, height);
-                    
-                    for (let y = 0; y < height; y += dimPunto) {
-                        for (let x = 0; x < width; x += dimPunto) {
-                            
-                            // Calcolo alpha medio del blocco corrente
-                            let sommaAlpha = 0;
-                            let conteggio = 0;
-                            
-                            for (let py = y; py < Math.min(y + dimPunto, height); py++) {
-                                for (let px = x; px < Math.min(x + dimPunto, width); px++) {
-                                    sommaAlpha += matriceAlpha[py * width + px];
-                                    conteggio++;
-                                }
+            if (tecnica === 'classica') {
+                for (let i = 0; i < pixels.length; i += 4) { pixels[i+3] = matriceAlpha[i/4]; }
+                ctx.putImageData(imgData, 0, 0);
+            } else {
+                ctx.clearRect(0, 0, width, height);
+                for (let y = 0; y < height; y += dimPunto) {
+                    for (let x = 0; x < width; x += dimPunto) {
+                        let sommaAlpha = 0, conteggio = 0;
+                        for (let py = y; py < Math.min(y + dimPunto, height); py++) {
+                            for (let px = x; px < Math.min(x + dimPunto, width); px++) {
+                                sommaAlpha += matriceAlpha[py * width + px];
+                                conteggio++;
                             }
-                            
-                            const alphaMedio = conteggio > 0 ? sommaAlpha / conteggio : 0;
-                            if (alphaMedio < 12) continue; // Salta i vuoti
+                        }
+                        const alphaMedio = conteggio > 0 ? sommaAlpha / conteggio : 0;
+                        if (alphaMedio < 12) continue;
 
-                            // Campioniamo il colore al centro del blocco
-                            const cx = Math.min(x + Math.floor(dimPunto / 2), width - 1);
-                            const cy = Math.min(y + Math.floor(dimPunto / 2), height - 1);
-                            const idx = (cy * width + cx) * 4;
-                            const r = pixels[idx];
-                            const g = pixels[idx+1];
-                            const b = pixels[idx+2];
+                        const cx = Math.min(x + Math.floor(dimPunto / 2), width - 1);
+                        const cy = Math.min(y + Math.floor(dimPunto / 2), height - 1);
+                        const idx = (cy * width + cx) * 4;
+                        const r = pixels[idx], g = pixels[idx+1], b = pixels[idx+2];
 
-                            if (alphaMedio > 230) {
-                                // Zone Piene: disegno un rettangolo compatto
-                                ctx.fillStyle = `rgba(${r},${g},${b},1)`;
-                                ctx.fillRect(x, y, Math.min(dimPunto, width - x), Math.min(dimPunto, height - y));
-                            } else {
-                                // Zone Sfumate: disegno il cerchio della retinatura
-                                const pct = alphaMedio / 255.0;
-                                const raggioMassimo = dimPunto / 2.0;
-                                const raggio = raggioMassimo * Math.sqrt(pct);
-                                
-                                ctx.beginPath();
-                                ctx.arc(x + dimPunto/2, y + dimPunto/2, raggio, 0, Math.PI * 2);
-                                ctx.fillStyle = `rgba(${r},${g},${b},1)`;
-                                ctx.fill();
-                            }
+                        if (alphaMedio > 230) {
+                            ctx.fillStyle = `rgba(${r},${g},${b},1)`;
+                            ctx.fillRect(x, y, Math.min(dimPunto, width - x), Math.min(dimPunto, height - y));
+                        } else {
+                            const raggio = (dimPunto / 2.0) * Math.sqrt(alphaMedio / 255.0);
+                            ctx.beginPath();
+                            ctx.arc(x + dimPunto/2, y + dimPunto/2, raggio, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(${r},${g},${b},1)`;
+                            ctx.fill();
                         }
                     }
                 }
+            }
 
-                // 3. Avvia il download automatico in formato PNG
-                const link = document.createElement('a');
-                link.download = 'ready_for_maintop.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
+            const link = document.createElement('a');
+            link.download = 'dtf_ready_cartoon.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
 
-                status.innerText = "File salvato con successo!";
-                btnElabora.disabled = false;
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(imageLoader.files[0]);
+            status.innerText = "File pronto e scaricato!";
+            btnElabora.disabled = false;
+        }, 50);
     });
 </script>
 
 </body>
+</html>
 </html>
