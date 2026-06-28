@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTF Pro Tool - Web Version</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e2e;
+            color: #cdd6f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #252538;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 { color: #f5c2e7; margin-top: 0; font-size: 24px; }
+        .section { margin: 20px 0; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+        input[type="file"], select, input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #313244;
+            border: 1px solid #45475a;
+            border-radius: 6px;
+            color: #cdd6f4;
+            box-sizing: border-box;
+        }
+        .radio-group { display: flex; gap: 15px; }
+        .radio-label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .btn {
+            background-color: #a6e3a1;
+            color: #11111b;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 15px;
+        }
+        .btn:hover { background-color: #94e2d5; }
+        .btn:disabled { background-color: #585b70; cursor: not-allowed; }
+        #status { margin-top: 15px; font-weight: bold; color: #f9e2af; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🖨️ DTF Web Tool (Ottimizzato Maintop)</h1>
+    <p style="font-size: 13px; color: #a6adc8;">Rimuovi il fondo e applica la retinatura direttamente nel browser</p>
+
+    <div class="section">
+        <label for="imageLoader">Seleziona Immagine (PNG, JPG):</label>
+        <input type="file" id="imageLoader" accept="image/*">
+    </div>
+
+    <div class="section">
+        <label>1. Tipo di Capo / Colore da rimuovere:</label>
+        <div class="radio-group">
+            <label class="radio-label"><input type="radio" name="modalita" value="nero" checked> Capo Scuri (Rimuovi Nero)</label>
+            <label class="radio-label"><input type="radio" name="modalita" value="bianco"> Capo Chiari (Rimuovi Bianco)</label>
+        </div>
+    </div>
+
+    <div class="section">
+        <label>2. Tecnica di Sfumatura:</label>
+        <div class="radio-group">
+            <label class="radio-label"><input type="radio" name="tecnica" value="ibrida" checked id="techIbrida"> Rasterizzazione Ibrida</label>
+            <label class="radio-label"><input type="radio" name="tecnica" value="classica"> Trasparenza Classica</label>
+        </div>
+    </div>
+
+    <div class="section">
+        <label id="lblTolleranza">Intensità del 'Buco' (Tolleranza): 1.0</label>
+        <input type="range" id="sliderTolleranza" min="0.3" max="2.0" step="0.1" value="1.0">
+    </div>
+
+    <div class="section" id="secPunti">
+        <label id="lblPunti">Dimensione Punti Retinatura: 4 px</label>
+        <input type="range" id="sliderPunti" min="2" max="8" step="1" value="4">
+    </div>
+
+    <button class="btn" id="btnElabora">Elabora e Scarica PNG</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    const imageLoader = document.getElementById('imageLoader');
+    const sliderTolleranza = document.getElementById('sliderTolleranza');
+    const sliderPunti = document.getElementById('sliderPunti');
+    const lblTolleranza = document.getElementById('lblTolleranza');
+    const lblPunti = document.getElementById('lblPunti');
+    const btnElabora = document.getElementById('btnElabora');
+    const status = document.getElementById('status');
+    const secPunti = document.getElementById('secPunti');
+
+    // Gestione aggiornamento etichette grafiche
+    sliderTolleranza.addEventListener('input', (e) => lblTolleranza.innerText = `Intensità del 'Buco' (Tolleranza): ${parseFloat(e.target.value).toFixed(1)}`);
+    sliderPunti.addEventListener('input', (e) => lblPunti.innerText = `Dimensione Punti Retinatura: ${e.target.value} px`);
+    
+    document.getElementsByName('tecnica').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            secPunti.style.opacity = e.target.value === 'classica' ? '0.4' : '1';
+            sliderPunti.disabled = e.target.value === 'classica';
+        });
+    });
+
+    btnElabora.addEventListener('click', () => {
+        if (!imageLoader.files[0]) {
+            alert("Per favore, seleziona prima un'immagine!");
+            return;
+        }
+
+        status.innerText = "Elaborazione in corso...";
+        btnElabora.disabled = true;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                // Creiamo un canvas nascosto in memoria delle stesse dimensioni dell'immagine originale
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                // Estraiamo la mappa dei pixel RGBA
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const pixels = imgData.data;
+                const width = canvas.width;
+                const height = canvas.height;
+
+                // Parametri scelti dall'utente
+                const modalita = document.querySelector('input[name="modalita"]:checked').value;
+                const tecnica = document.querySelector('input[name="tecnica"]:checked').value;
+                const tolleranza = parseFloat(sliderTolleranza.value);
+                const dimPunto = parseInt(sliderPunti.value);
+
+                // 1. Calcoliamo la matrice dell'opacità teorica (Alpha)
+                const matriceAlpha = new Int32Array(width * height);
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const r = pixels[i];
+                    const g = pixels[i+1];
+                    const b = pixels[i+2];
+                    const a = pixels[i+3];
+
+                    if (a === 0) {
+                        matriceAlpha[i/4] = 0;
+                        continue;
+                    }
+
+                    const luminanza = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+                    let nuovoAlpha;
+                    if (modalita === 'nero') {
+                        nuovoAlpha = Math.floor(a * Math.pow(luminanza, 1 / tolleranza));
+                    } else {
+                        nuovoAlpha = Math.floor(a * Math.pow(1.0 - luminanza, 1 / tolleranza));
+                    }
+                    matriceAlpha[i/4] = nuovoAlpha;
+                }
+
+                // 2. Applichiamo l'effetto basato sulla tecnica
+                if (tecnica === 'classica') {
+                    for (let i = 0; i < pixels.length; i += 4) {
+                        pixels[i+3] = matriceAlpha[i/4];
+                    }
+                    ctx.putImageData(imgData, 0, 0);
+                } else {
+                    // LOGICA IBRIDA OTTIMIZZATA PER MAINTOP
+                    // Puliamo il canvas per ridisegnare da zero con trasparenza totale
+                    ctx.clearRect(0, 0, width, height);
+                    
+                    for (let y = 0; y < height; y += dimPunto) {
+                        for (let x = 0; x < width; x += dimPunto) {
+                            
+                            // Calcolo alpha medio del blocco corrente
+                            let sommaAlpha = 0;
+                            let conteggio = 0;
+                            
+                            for (let py = y; py < Math.min(y + dimPunto, height); py++) {
+                                for (let px = x; px < Math.min(x + dimPunto, width); px++) {
+                                    sommaAlpha += matriceAlpha[py * width + px];
+                                    conteggio++;
+                                }
+                            }
+                            
+                            const alphaMedio = conteggio > 0 ? sommaAlpha / conteggio : 0;
+                            if (alphaMedio < 12) continue; // Salta i vuoti
+
+                            // Campioniamo il colore al centro del blocco
+                            const cx = Math.min(x + Math.floor(dimPunto / 2), width - 1);
+                            const cy = Math.min(y + Math.floor(dimPunto / 2), height - 1);
+                            const idx = (cy * width + cx) * 4;
+                            const r = pixels[idx];
+                            const g = pixels[idx+1];
+                            const b = pixels[idx+2];
+
+                            if (alphaMedio > 230) {
+                                // Zone Piene: disegno un rettangolo compatto
+                                ctx.fillStyle = `rgba(${r},${g},${b},1)`;
+                                ctx.fillRect(x, y, Math.min(dimPunto, width - x), Math.min(dimPunto, height - y));
+                            } else {
+                                // Zone Sfumate: disegno il cerchio della retinatura
+                                const pct = alphaMedio / 255.0;
+                                const raggioMassimo = dimPunto / 2.0;
+                                const raggio = raggioMassimo * Math.sqrt(pct);
+                                
+                                ctx.beginPath();
+                                ctx.arc(x + dimPunto/2, y + dimPunto/2, raggio, 0, Math.PI * 2);
+                                ctx.fillStyle = `rgba(${r},${g},${b},1)`;
+                                ctx.fill();
+                            }
+                        }
+                    }
+                }
+
+                // 3. Avvia il download automatico in formato PNG
+                const link = document.createElement('a');
+                link.download = 'ready_for_maintop.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                status.innerText = "File salvato con successo!";
+                btnElabora.disabled = false;
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(imageLoader.files[0]);
+    });
+</script>
+
+</body>
+</html>
