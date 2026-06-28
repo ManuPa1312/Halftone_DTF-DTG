@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DTF Pro Tool & Vector Cartoon Studio</title>
+    <title>DTF Pro Tool - HD Upscale & Halftone Studio</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -28,7 +28,8 @@
         h1 { color: #f5c2e7; margin-top: 0; font-size: 24px; }
         h2 { color: #94e2d5; font-size: 18px; text-align: left; margin-top: 25px; border-bottom: 1px solid #45475a; padding-bottom: 5px; }
         .section { margin: 15px 0; text-align: left; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+        .control-group { background-color: #1e1e2e; padding: 15px; border-radius: 8px; border: 1px solid #313244; margin-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #bac2de; }
         input[type="file"], select, input[type="range"] {
             width: 100%;
             padding: 10px;
@@ -39,7 +40,7 @@
             box-sizing: border-box;
         }
         .radio-group { display: flex; gap: 15px; flex-wrap: wrap; }
-        .radio-label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px; }
+        .radio-label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px; color: #cdd6f4; }
         .btn {
             color: #11111b;
             border: none;
@@ -52,65 +53,73 @@
             transition: background 0.2s;
             margin-top: 10px;
         }
-        .btn-ai { background-color: #cba6f7; }
-        .btn-ai:hover { background-color: #f5c2e7; }
+        .btn-hd { background-color: #cba6f7; }
+        .btn-hd:hover { background-color: #f5c2e7; }
+        .btn-dl-clean { background-color: #f9e2af; margin-top: 5px; }
+        .btn-dl-clean:hover { background-color: #eba0ac; }
         .btn-dtf { background-color: #a6e3a1; margin-top: 20px; padding: 14px; font-size: 16px; }
         .btn-dtf:hover { background-color: #94e2d5; }
         .btn:disabled { background-color: #585b70; color: #a6adc8; cursor: not-allowed; }
-        #status { margin-top: 15px; font-weight: bold; color: #f9e2af; font-size: 14px; }
-        .preview-box { max-height: 250px; overflow: hidden; margin-top: 10px; border-radius: 6px; display: none; border: 2px dashed #45475a; }
-        .preview-box img { width: 100%; height: auto; object-fit: contain; max-height: 250px; }
+        #status { margin-top: 15px; font-weight: bold; color: #f9e2af; font-size: 14px; min-height: 1.2em; }
+        .preview-box { max-height: 250px; overflow: hidden; margin-top: 15px; border-radius: 8px; display: none; border: 2px dashed #45475a; background-color: #11111b;}
+        .preview-box img { width: 100%; height: auto; object-fit: contain; max-height: 250px; display: block;}
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🖨️ DTF Tool & Cartoon Vector Studio</h1>
-    <p style="font-size: 13px; color: #a6adc8; margin-bottom: 20px;">Carica la foto, trasformala in disegno pop-art e preparala per Maintop.</p>
+    <h1>🖨️ DTF Tool - HD Upscale & Halftone</h1>
+    <p style="font-size: 13px; color: #a6adc8; margin-bottom: 20px;">Aumenta la definizione della foto in alta qualità e applica la retinatura per Maintop.</p>
 
     <div class="section">
         <label for="imageLoader">Carica la tua foto di partenza:</label>
         <input type="file" id="imageLoader" accept="image/*">
         <div class="preview-box" id="previewContainer">
-            <img id="srcPreview" src="#" alt="Anteprima">
+            <img id="srcPreview" src="" alt="Anteprima">
         </div>
     </div>
 
-    <h2>Fase 1: Effetto Disegno Pop-Art</h2>
-    <div class="section">
-        <label id="lblSpessore">Spessore Linee Contorno: Sottile</label>
-        <input type="range" id="sliderBordi" min="1" max="3" step="1" value="1">
-    </div>
-    <div class="section">
-        <button class="btn btn-ai" id="btnCartoon">⚡ Applica Effetto Fumetto Vettoriale</button>
-    </div>
-
-    <h2>Fase 2: Ottimizzazione e Retinatura DTF</h2>
-    
-    <div class="section">
-        <label>1. Tipo di Capo / Colore da rimuovere:</label>
-        <div class="radio-group">
-            <label class="radio-label"><input type="radio" name="modalita" value="nero" checked> Capo Scuro (Rimuovi Nero)</label>
-            <label class="radio-label"><input type="radio" name="modalita" value="bianco"> Capo Chiaro (Rimuovi Bianco)</label>
+    <h2>Fase 1: Ingrandimento e Miglioramento Qualità (HD)</h2>
+    <div class="control-group">
+        <div class="section">
+            <label>Moltiplicatore Risoluzione (Upscaling Nativo):</label>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="upscaleOpt" value="1"> Originale (No Upscale)</label>
+                <label class="radio-label"><input type="radio" name="upscaleOpt" value="2" checked> 2x (Alta Definizione)</label>
+                <label class="radio-label"><input type="radio" name="upscaleOpt" value="3"> 3x (Massima Risoluzione)</label>
+            </div>
         </div>
+        <button class="btn btn-hd" id="btnUpscale">⚡ Ingrandisci e Ottimizza Dettagli</button>
+        <button class="btn btn-dl-clean" id="btnDownloadClean" disabled>📥 Scarica solo l'immagine HD (No Halftone)</button>
     </div>
 
-    <div class="section">
-        <label>2. Tecnica di Sfumatura:</label>
-        <div class="radio-group">
-            <label class="radio-label"><input type="radio" name="tecnica" value="ibrida" checked id="techIbrida"> Rasterizzazione Ibrida (Maintop)</label>
-            <label class="radio-label"><input type="radio" name="tecnica" value="classica"> Trasparenza Classica</label>
+    <h2>Fase 2: Ottimizzazione e Retinatura DTF (Halftone)</h2>
+    <div class="control-group">
+        <div class="section">
+            <label>1. Tipo di Capo / Colore da rimuovere:</label>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="modalita" value="nero" checked> Capo Scuri (Rimuovi Nero)</label>
+                <label class="radio-label"><input type="radio" name="modalita" value="bianco"> Capo Chiari (Rimuovi Bianco)</label>
+            </div>
         </div>
-    </div>
 
-    <div class="section">
-        <label id="lblTolleranza">Intensità del 'Buco' (Tolleranza): 1.0</label>
-        <input type="range" id="sliderTolleranza" min="0.3" max="2.0" step="0.1" value="1.0">
-    </div>
+        <div class="section">
+            <label>2. Tecnica di Sfumatura:</label>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="tecnica" value="ibrida" checked id="techIbrida"> Rasterizzazione Ibrida (Maintop)</label>
+                <label class="radio-label"><input type="radio" name="tecnica" value="classica"> Trasparenza Classica</label>
+            </div>
+        </div>
 
-    <div class="section" id="secPunti">
-        <label id="lblPunti">Dimensione Punti Retinatura: 4 px</label>
-        <input type="range" id="sliderPunti" min="2" max="8" step="1" value="4">
+        <div class="section">
+            <label id="lblTolleranza">Intensità del 'Buco' (Tolleranza): 1.0</label>
+            <input type="range" id="sliderTolleranza" min="0.3" max="2.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="section" id="secPunti">
+            <label id="lblPunti">Dimensione Punti Retinatura: 4 px</label>
+            <input type="range" id="sliderPunti" min="2" max="8" step="1" value="4">
+        </div>
     </div>
 
     <button class="btn btn-dtf" id="btnElabora">Genera e Scarica PNG per Maintop</button>
@@ -119,28 +128,23 @@
 
 <script>
     let imgOriginale = null;
-    let imgLavorata = null; 
+    let canvasHD = null; // Memorizza l'immagine ad alta risoluzione
 
     const imageLoader = document.getElementById('imageLoader');
     const previewContainer = document.getElementById('previewContainer');
     const srcPreview = document.getElementById('srcPreview');
-    const btnCartoon = document.getElementById('btnCartoon');
+    const btnUpscale = document.getElementById('btnUpscale');
+    const btnDownloadClean = document.getElementById('btnDownloadClean');
     const btnElabora = document.getElementById('btnElabora');
     const status = document.getElementById('status');
     const sliderTolleranza = document.getElementById('sliderTolleranza');
     const sliderPunti = document.getElementById('sliderPunti');
-    const sliderBordi = document.getElementById('sliderBordi');
     const lblTolleranza = document.getElementById('lblTolleranza');
     const lblPunti = document.getElementById('lblPunti');
-    const lblSpessore = document.getElementById('lblSpessore');
     const secPunti = document.getElementById('secPunti');
 
     sliderTolleranza.addEventListener('input', (e) => lblTolleranza.innerText = `Intensità del 'Buco' (Tolleranza): ${parseFloat(e.target.value).toFixed(1)}`);
     sliderPunti.addEventListener('input', (e) => lblPunti.innerText = `Dimensione Punti Retinatura: ${e.target.value} px`);
-    sliderBordi.addEventListener('input', (e) => {
-        const v = parseInt(e.target.value);
-        lblSpessore.innerText = `Spessore Linee Contorno: ${v === 1 ? 'Sottile' : v === 2 ? 'Medio' : 'Marcato'}`;
-    });
 
     document.getElementsByName('tecnica').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -152,14 +156,22 @@
     imageLoader.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
+            status.innerText = "Caricamento immagine originale...";
             const reader = new FileReader();
             reader.onload = function(event) {
                 imgOriginale = new Image();
                 imgOriginale.onload = function() {
+                    // Imposta il canvas iniziale basato sulle dimensioni originali
+                    canvasHD = document.createElement('canvas');
+                    canvasHD.width = imgOriginale.width;
+                    canvasHD.height = imgOriginale.height;
+                    const ctx = canvasHD.getContext('2d');
+                    ctx.drawImage(imgOriginale, 0, 0);
+
                     srcPreview.src = event.target.result;
                     previewContainer.style.display = 'block';
-                    imgLavorata = imgOriginale; 
-                    status.innerText = "Immagine caricata correttamente.";
+                    btnDownloadClean.disabled = true;
+                    status.innerText = "Immagine caricata. Puoi fare l'Upscale HD o procedere alla retinatura.";
                 };
                 imgOriginale.src = event.target.result;
             };
@@ -167,180 +179,170 @@
         }
     });
 
-    // Fase 1: Algoritmo Cel-Shading + Sobel Edge Detection
-    btnCartoon.addEventListener('click', () => {
+    // Fase 1: Ingrandimento e Ricostruzione Nitidezza
+    btnUpscale.addEventListener('click', () => {
         if (!imgOriginale) { alert("Carica prima un'immagine!"); return; }
-        status.innerText = "Creazione effetto disegno vettoriale...";
-        btnCartoon.disabled = true;
+
+        btnUpscale.disabled = true;
+        status.innerText = "Elaborazione upscaling e miglioramento dettagli...";
 
         setTimeout(() => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = imgOriginale.width;
-            canvas.height = imgOriginale.height;
-            ctx.drawImage(imgOriginale, 0, 0);
-
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imgData.data;
-            const width = canvas.width;
-            const height = canvas.height;
-
-            // Mappa dei toni grigi per i contorni
-            const grayData = new Uint8ClampedArray(width * height);
-            const livelli = 5; // Livelli di posterizzazione dei colori
-
-            for (let i = 0; i < data.length; i += 4) {
-                // 1. Posterizzazione (Raggruppa i colori in blocchi netti stile vettoriale)
-                data[i] = Math.round(data[i] / 255 * livelli) * (255 / livelli);
-                data[i+1] = Math.round(data[i+1] / 255 * livelli) * (255 / livelli);
-                data[i+2] = Math.round(data[i+2] / 255 * livelli) * (255 / livelli);
+            try {
+                const moltiplicatore = parseInt(document.querySelector('input[name="upscaleOpt"]:checked').value);
                 
-                // Salva mappa in scala di grigi per calcolare i bordi
-                grayData[i/4] = (data[i] + data[i+1] + data[i+2]) / 3;
-            }
+                const upCanvas = document.createElement('canvas');
+                upCanvas.width = imgOriginale.width * moltiplicatore;
+                upCanvas.height = imgOriginale.height * moltiplicatore;
+                const upCtx = upCanvas.getContext('2d');
 
-            // 2. Filtro Sobel per tracciare le linee nere sui contorni esterni
-            const spessore = parseInt(sliderBordi.value);
-            const edgeData = new Uint8ClampedArray(width * height);
-            
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    const idx = y * width + x;
-                    
-                    // Matrice Sobel asse X e Y
-                    const gx = (
-                        -1 * grayData[idx - width - 1] + 1 * grayData[idx - width + 1] +
-                        -2 * grayData[idx - 1]         + 2 * grayData[idx + 1] +
-                        -1 * grayData[idx + width - 1] + 1 * grayData[idx + width + 1]
-                    );
-                    const gy = (
-                        -1 * grayData[idx - width - 1] - 2 * grayData[idx - width] - 1 * grayData[idx - width + 1] +
-                        1 * grayData[idx + width - 1] + 2 * grayData[idx + width] + 1 * grayData[idx + width + 1]
-                    );
-                    
-                    const magnitudo = Math.sqrt(gx * gx + gy * gy);
-                    edgeData[idx] = magnitudo > 45 ? 255 : 0; // Soglia contorno netta
-                }
-            }
+                // Ricostruzione interpolata ad alta qualità
+                upCtx.imageSmoothingEnabled = true;
+                upCtx.imageSmoothingQuality = 'high';
+                upCtx.drawImage(imgOriginale, 0, 0, upCanvas.width, upCanvas.height);
 
-            // 3. Uniamo i contorni neri marcati sopra i colori posterizzati
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const idx = (y * width + x) * 4;
-                    const edgeIdx = y * width + x;
+                // Filtro di contrasto localizzato (Sharpening geometrico) per definire i bordi sfocati
+                if (moltiplicatore > 1) {
+                    const imgData = upCtx.getImageData(0, 0, upCanvas.width, upCanvas.height);
+                    const data = imgData.data;
+                    const w = upCanvas.width;
+                    const h = upCanvas.height;
+                    const copia = new Uint8ClampedArray(data);
+
+                    // Matrice di convoluzione di precisione per aumentare la nitidezza
+                    const k = [0, -0.3, 0, -0.3, 2.2, -0.3, 0, -0.3, 0];
                     
-                    // Controlla se espandere il bordo (spessore delle linee nere)
-                    let isEdge = false;
-                    for (let dy = 0; dy < spessore; dy++) {
-                        for (let dx = 0; dx < spessore; dx++) {
-                            if (edgeData[(y + dy < height ? y + dy : y) * width + (x + dx < width ? x + dx : x)] === 255) {
-                                isEdge = true;
-                                break;
+                    for (let y = 1; y < h - 1; y++) {
+                        for (let x = 1; x < w - 1; x++) {
+                            for (let c = 0; c < 3; c++) {
+                                let sum = 0;
+                                for (let ky = -1; ky <= 1; ky++) {
+                                    for (let kx = -1; kx <= 1; kx++) {
+                                        const pixelIdx = ((y + ky) * w + (x + kx)) * 4 + c;
+                                        const kernelIdx = (ky + 1) * 3 + (kx + 1);
+                                        sum += copia[pixelIdx] * k[kernelIdx];
+                                    }
+                                }
+                                data[(y * w + x) * 4 + c] = Math.min(255, Math.max(0, sum));
                             }
                         }
-                        if (isEdge) break;
                     }
-
-                    if (isEdge) {
-                        data[idx] = 15;     // R (Nero tracciato)
-                        data[idx+1] = 15;   // G
-                        data[idx+2] = 15;   // B
-                    }
+                    upCtx.putImageData(imgData, 0, 0);
                 }
-            }
 
-            ctx.putImageData(imgData, 0, 0);
-            srcPreview.src = canvas.toDataURL('image/png');
-            
-            imgLavorata = new Image();
-            imgLavorata.onload = () => {
-                status.innerText = "Effetto disegno Pop-Art applicato con successo!";
-                btnCartoon.disabled = false;
-            };
-            imgLavorata.src = srcPreview.src;
-        }, 40);
+                canvasHD = upCanvas;
+                srcPreview.src = canvasHD.toDataURL('image/png');
+                
+                status.innerText = `Immagine ottimizzata a ${canvasHD.width}x${canvasHD.height} px!`;
+                btnUpscale.disabled = false;
+                btnDownloadClean.disabled = false;
+
+            } catch (err) {
+                console.error(err);
+                status.innerText = "Errore durante l'ottimizzazione HD.";
+                btnUpscale.disabled = false;
+            }
+        }, 50);
     });
 
-    // Fase 2: Elaborazione finale DTF e Download
-    btnElabora.addEventListener('click', () => {
-        if (!imgLavorata) { alert("Seleziona o elabora un'immagine prima!"); return; }
+    // Scarica solo l'immagine ingrandita senza mezzitoni
+    btnDownloadClean.addEventListener('click', () => {
+        if (!canvasHD) return;
+        const link = document.createElement('a');
+        link.download = 'immagine_ottimizzata_hd.png';
+        link.href = canvasHD.toDataURL('image/png');
+        link.click();
+        status.innerText = "File HD (No Halftone) scaricato!";
+    });
 
-        status.innerText = "Preparazione file per Maintop...";
+    // Fase 2: Algoritmo Halftone Classico
+    btnElabora.addEventListener('click', () => {
+        if (!canvasHD) { alert("Carica un'immagine prima!"); return; }
+
+        status.innerText = "Generazione dei mezzitoni Halftone...";
         btnElabora.disabled = true;
 
         setTimeout(() => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = imgLavorata.width;
-            canvas.height = imgLavorata.height;
-            ctx.drawImage(imgLavorata, 0, 0);
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = canvasHD.width;
+                canvas.height = canvasHD.height;
+                ctx.drawImage(canvasHD, 0, 0);
 
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imgData.data;
-            const width = canvas.width;
-            const height = canvas.height;
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const pixels = imgData.data;
+                const width = canvas.width;
+                const height = canvas.height;
 
-            const modalita = document.querySelector('input[name="modalita"]:checked').value;
-            const tecnica = document.querySelector('input[name="tecnica"]:checked').value;
-            const tolleranza = parseFloat(sliderTolleranza.value);
-            const dimPunto = parseInt(sliderPunti.value);
+                const modalita = document.querySelector('input[name="modalita"]:checked').value;
+                const tecnica = document.querySelector('input[name="tecnica"]:checked').value;
+                const tolleranza = parseFloat(sliderTolleranza.value);
+                const dimPunto = parseInt(sliderPunti.value);
 
-            const matriceAlpha = new Int32Array(width * height);
-            for (let i = 0; i < pixels.length; i += 4) {
-                const r = pixels[i], g = pixels[i+1], b = pixels[i+2], a = pixels[i+3];
+                const matriceAlpha = new Int32Array(width * height);
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const r = pixels[i], g = pixels[i+1], b = pixels[i+2], a = pixels[i+3];
+                    if (a === 0) { matriceAlpha[i/4] = 0; continue; }
 
-                if (a === 0) { matriceAlpha[i/4] = 0; continue; }
+                    const luminanza = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+                    let nuovoAlpha = modalita === 'nero' ? 
+                        Math.floor(a * Math.pow(luminanza, 1 / tolleranza)) : 
+                        Math.floor(a * Math.pow(1.0 - luminanza, 1 / tolleranza));
+                    
+                    matriceAlpha[i/4] = Math.max(0, Math.min(255, nuovoAlpha));
+                }
 
-                const luminanza = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
-                let nuovoAlpha = modalita === 'nero' ? 
-                    Math.floor(a * Math.pow(luminanza, 1 / tolleranza)) : 
-                    Math.floor(a * Math.pow(1.0 - luminanza, 1 / tolleranza));
-                matriceAlpha[i/4] = nuovoAlpha;
-            }
-
-            if (tecnica === 'classica') {
-                for (let i = 0; i < pixels.length; i += 4) { pixels[i+3] = matriceAlpha[i/4]; }
-                ctx.putImageData(imgData, 0, 0);
-            } else {
-                ctx.clearRect(0, 0, width, height);
-                for (let y = 0; y < height; y += dimPunto) {
-                    for (let x = 0; x < width; x += dimPunto) {
-                        let sommaAlpha = 0, conteggio = 0;
-                        for (let py = y; py < Math.min(y + dimPunto, height); py++) {
-                            for (let px = x; px < Math.min(x + dimPunto, width); px++) {
-                                sommaAlpha += matriceAlpha[py * width + px];
-                                conteggio++;
+                if (tecnica === 'classica') {
+                    for (let i = 0; i < pixels.length; i += 4) { pixels[i+3] = matriceAlpha[i/4]; }
+                    ctx.putImageData(imgData, 0, 0);
+                } else {
+                    ctx.clearRect(0, 0, width, height);
+                    for (let y = 0; y < height; y += dimPunto) {
+                        for (let x = 0; x < width; x += dimPunto) {
+                            
+                            let sommaAlpha = 0, conteggio = 0;
+                            for (let py = y; py < Math.min(y + dimPunto, height); py++) {
+                                for (let px = x; px < Math.min(x + dimPunto, width); px++) {
+                                    sommaAlpha += matriceAlpha[py * width + px];
+                                    conteggio++;
+                                }
                             }
-                        }
-                        const alphaMedio = conteggio > 0 ? sommaAlpha / conteggio : 0;
-                        if (alphaMedio < 12) continue;
+                            const alphaMedio = conteggio > 0 ? sommaAlpha / conteggio : 0;
+                            if (alphaMedio < 12) continue; 
 
-                        const cx = Math.min(x + Math.floor(dimPunto / 2), width - 1);
-                        const cy = Math.min(y + Math.floor(dimPunto / 2), height - 1);
-                        const idx = (cy * width + cx) * 4;
-                        const r = pixels[idx], g = pixels[idx+1], b = pixels[idx+2];
+                            const cx = Math.min(x + Math.floor(dimPunto / 2), width - 1);
+                            const cy = Math.min(y + Math.floor(dimPunto / 2), height - 1);
+                            const idx = (cy * width + cx) * 4;
+                            const r = pixels[idx], g = pixels[idx+1], b = pixels[idx+2];
 
-                        if (alphaMedio > 230) {
-                            ctx.fillStyle = `rgba(${r},${g},${b},1)`;
-                            ctx.fillRect(x, y, Math.min(dimPunto, width - x), Math.min(dimPunto, height - y));
-                        } else {
-                            const raggio = (dimPunto / 2.0) * Math.sqrt(alphaMedio / 255.0);
-                            ctx.beginPath();
-                            ctx.arc(x + dimPunto/2, y + dimPunto/2, raggio, 0, Math.PI * 2);
-                            ctx.fillStyle = `rgba(${r},${g},${b},1)`;
-                            ctx.fill();
+                            if (alphaMedio > 232) {
+                                ctx.fillStyle = `rgba(${r},${g},${b},1)`;
+                                ctx.fillRect(x, y, Math.min(dimPunto, width - x), Math.min(dimPunto, height - y));
+                            } else {
+                                const raggio = (dimPunto / 2.0) * Math.sqrt(alphaMedio / 255.0);
+                                ctx.beginPath();
+                                ctx.arc(x + dimPunto/2, y + dimPunto/2, Math.max(0.1, raggio), 0, Math.PI * 2);
+                                ctx.fillStyle = `rgba(${r},${g},${b},1)`;
+                                ctx.fill();
+                            }
                         }
                     }
                 }
+
+                const link = document.createElement('a');
+                link.download = 'dtf_halftone_ready.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                status.innerText = "File Halftone pronto e scaricato!";
+                btnElabora.disabled = false;
+
+            } catch (err) {
+                console.error(err);
+                status.innerText = "Errore durante la generazione dei mezzitoni.";
+                btnElabora.disabled = false;
             }
-
-            const link = document.createElement('a');
-            link.download = 'dtf_ready_cartoon.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-
-            status.innerText = "File pronto e scaricato con successo per Maintop!";
-            btnElabora.disabled = false;
         }, 50);
     });
 </script>
