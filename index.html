@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DTF Pro Tool - HD Upscale & Halftone Studio</title>
+    <title>DTF Pro Tool - Controllo Inchiostro & Halftone</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -68,8 +68,8 @@
 <body>
 
 <div class="container">
-    <h1>🖨️ DTF Tool - HD Upscale & Halftone</h1>
-    <p style="font-size: 13px; color: #a6adc8; margin-bottom: 20px;">Aumenta la definizione della foto in alta qualità e applica la retinatura per Maintop.</p>
+    <h1>🖨️ DTF Tool - HD Upscale & Halftone Pro</h1>
+    <p style="font-size: 13px; color: #a6adc8; margin-bottom: 20px;">Ottimizzazione densità punti e inchiostro per evitare stampe sbiadite.</p>
 
     <div class="section">
         <label for="imageLoader">Carica la tua foto di partenza:</label>
@@ -112,8 +112,13 @@
         </div>
 
         <div class="section">
-            <label id="lblTolleranza">Intensità del 'Buco' (Tolleranza): 1.0</label>
-            <input type="range" id="sliderTolleranza" min="0.3" max="2.0" step="0.1" value="1.0">
+            <label id="lblTolleranza">Morbidezza Sfumatura (Tolleranza): 1.4</label>
+            <input type="range" id="sliderTolleranza" min="0.5" max="2.5" step="0.1" value="1.4">
+        </div>
+
+        <div class="section">
+            <label id="lblMaxWhite">Limite Massimo Inchiostro Bianco: 65%</label>
+            <input type="range" id="sliderMaxWhite" min="30" max="100" step="5" value="65">
         </div>
 
         <div class="section" id="secPunti">
@@ -128,7 +133,7 @@
 
 <script>
     let imgOriginale = null;
-    let canvasHD = null; // Memorizza l'immagine ad alta risoluzione
+    let canvasHD = null; 
 
     const imageLoader = document.getElementById('imageLoader');
     const previewContainer = document.getElementById('previewContainer');
@@ -138,12 +143,15 @@
     const btnElabora = document.getElementById('btnElabora');
     const status = document.getElementById('status');
     const sliderTolleranza = document.getElementById('sliderTolleranza');
+    const sliderMaxWhite = document.getElementById('sliderMaxWhite');
     const sliderPunti = document.getElementById('sliderPunti');
     const lblTolleranza = document.getElementById('lblTolleranza');
+    const lblMaxWhite = document.getElementById('lblMaxWhite');
     const lblPunti = document.getElementById('lblPunti');
     const secPunti = document.getElementById('secPunti');
 
-    sliderTolleranza.addEventListener('input', (e) => lblTolleranza.innerText = `Intensità del 'Buco' (Tolleranza): ${parseFloat(e.target.value).toFixed(1)}`);
+    sliderTolleranza.addEventListener('input', (e) => lblTolleranza.innerText = `Morbidezza Sfumatura (Tolleranza): ${parseFloat(e.target.value).toFixed(1)}`);
+    sliderMaxWhite.addEventListener('input', (e) => lblMaxWhite.innerText = `Limite Massimo Inchiostro Bianco: ${e.target.value}%`);
     sliderPunti.addEventListener('input', (e) => lblPunti.innerText = `Dimensione Punti Retinatura: ${e.target.value} px`);
 
     document.getElementsByName('tecnica').forEach(radio => {
@@ -161,7 +169,6 @@
             reader.onload = function(event) {
                 imgOriginale = new Image();
                 imgOriginale.onload = function() {
-                    // Imposta il canvas iniziale basato sulle dimensioni originali
                     canvasHD = document.createElement('canvas');
                     canvasHD.width = imgOriginale.width;
                     canvasHD.height = imgOriginale.height;
@@ -171,7 +178,7 @@
                     srcPreview.src = event.target.result;
                     previewContainer.style.display = 'block';
                     btnDownloadClean.disabled = true;
-                    status.innerText = "Immagine caricata. Puoi fare l'Upscale HD o procedere alla retinatura.";
+                    status.innerText = "Immagine caricata.";
                 };
                 imgOriginale.src = event.target.result;
             };
@@ -179,36 +186,29 @@
         }
     });
 
-    // Fase 1: Ingrandimento e Ricostruzione Nitidezza
     btnUpscale.addEventListener('click', () => {
         if (!imgOriginale) { alert("Carica prima un'immagine!"); return; }
-
         btnUpscale.disabled = true;
-        status.innerText = "Elaborazione upscaling e miglioramento dettagli...";
+        status.innerText = "Elaborazione upscaling...";
 
         setTimeout(() => {
             try {
                 const moltiplicatore = parseInt(document.querySelector('input[name="upscaleOpt"]:checked').value);
-                
                 const upCanvas = document.createElement('canvas');
                 upCanvas.width = imgOriginale.width * moltiplicatore;
                 upCanvas.height = imgOriginale.height * moltiplicatore;
                 const upCtx = upCanvas.getContext('2d');
 
-                // Ricostruzione interpolata ad alta qualità
                 upCtx.imageSmoothingEnabled = true;
                 upCtx.imageSmoothingQuality = 'high';
                 upCtx.drawImage(imgOriginale, 0, 0, upCanvas.width, upCanvas.height);
 
-                // Filtro di contrasto localizzato (Sharpening geometrico) per definire i bordi sfocati
                 if (moltiplicatore > 1) {
                     const imgData = upCtx.getImageData(0, 0, upCanvas.width, upCanvas.height);
                     const data = imgData.data;
                     const w = upCanvas.width;
                     const h = upCanvas.height;
                     const copia = new Uint8ClampedArray(data);
-
-                    // Matrice di convoluzione di precisione per aumentare la nitidezza
                     const k = [0, -0.3, 0, -0.3, 2.2, -0.3, 0, -0.3, 0];
                     
                     for (let y = 1; y < h - 1; y++) {
@@ -217,9 +217,7 @@
                                 let sum = 0;
                                 for (let ky = -1; ky <= 1; ky++) {
                                     for (let kx = -1; kx <= 1; kx++) {
-                                        const pixelIdx = ((y + ky) * w + (x + kx)) * 4 + c;
-                                        const kernelIdx = (ky + 1) * 3 + (kx + 1);
-                                        sum += copia[pixelIdx] * k[kernelIdx];
+                                        sum += copia[((y + ky) * w + (x + kx)) * 4 + c] * k[(ky + 1) * 3 + (kx + 1)];
                                     }
                                 }
                                 data[(y * w + x) * 4 + c] = Math.min(255, Math.max(0, sum));
@@ -231,41 +229,33 @@
 
                 canvasHD = upCanvas;
                 srcPreview.src = canvasHD.toDataURL('image/png');
-                
-                status.innerText = `Immagine ottimizzata a ${canvasHD.width}x${canvasHD.height} px!`;
+                status.innerText = "Immagine HD ottimizzata!";
                 btnUpscale.disabled = false;
                 btnDownloadClean.disabled = false;
-
             } catch (err) {
-                console.error(err);
-                status.innerText = "Errore durante l'ottimizzazione HD.";
+                status.innerText = "Errore nell'ottimizzazione HD.";
                 btnUpscale.disabled = false;
             }
         }, 50);
     });
 
-    // Scarica solo l'immagine ingrandita senza mezzitoni
     btnDownloadClean.addEventListener('click', () => {
         if (!canvasHD) return;
         const link = document.createElement('a');
-        link.download = 'immagine_ottimizzata_hd.png';
+        link.download = 'immagine_hd.png';
         link.href = canvasHD.toDataURL('image/png');
         link.click();
-        status.innerText = "File HD (No Halftone) scaricato!";
     });
 
-    // Fase 2: Algoritmo Halftone Classico
     btnElabora.addEventListener('click', () => {
-        if (!canvasHD) { alert("Carica un'immagine prima!"); return; }
-
-        status.innerText = "Generazione dei mezzitoni Halftone...";
+        if (!canvasHD) { alert("Carica un'immagine!"); return; }
+        status.innerText = "Generazione Halftone bilanciato...";
         btnElabora.disabled = true;
 
         setTimeout(() => {
             try {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                
                 canvas.width = canvasHD.width;
                 canvas.height = canvasHD.height;
                 ctx.drawImage(canvasHD, 0, 0);
@@ -278,6 +268,7 @@
                 const modalita = document.querySelector('input[name="modalita"]:checked').value;
                 const tecnica = document.querySelector('input[name="tecnica"]:checked').value;
                 const tolleranza = parseFloat(sliderTolleranza.value);
+                const maxWhiteCap = parseInt(sliderMaxWhite.value) / 100;
                 const dimPunto = parseInt(sliderPunti.value);
 
                 const matriceAlpha = new Int32Array(width * height);
@@ -286,11 +277,15 @@
                     if (a === 0) { matriceAlpha[i/4] = 0; continue; }
 
                     const luminanza = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
-                    let nuovoAlpha = modalita === 'nero' ? 
-                        Math.floor(a * Math.pow(luminanza, 1 / tolleranza)) : 
-                        Math.floor(a * Math.pow(1.0 - luminanza, 1 / tolleranza));
                     
-                    matriceAlpha[i/4] = Math.max(0, Math.min(255, nuovoAlpha));
+                    // Curva di tolleranza modificata per tagliare i mezzitoni scuri
+                    let nuovoAlpha = modalita === 'nero' ? 
+                        Math.floor(a * Math.pow(luminanza, tolleranza)) : 
+                        Math.floor(a * Math.pow(1.0 - luminanza, tolleranza));
+                    
+                    // Applica il tetto massimo all'inchiostro bianco
+                    nuovoAlpha = Math.min(nuovoAlpha, Math.floor(255 * maxWhiteCap));
+                    matriceAlpha[i/4] = Math.max(0, nuovoAlpha);
                 }
 
                 if (tecnica === 'classica') {
@@ -300,7 +295,6 @@
                     ctx.clearRect(0, 0, width, height);
                     for (let y = 0; y < height; y += dimPunto) {
                         for (let x = 0; x < width; x += dimPunto) {
-                            
                             let sommaAlpha = 0, conteggio = 0;
                             for (let py = y; py < Math.min(y + dimPunto, height); py++) {
                                 for (let px = x; px < Math.min(x + dimPunto, width); px++) {
@@ -309,38 +303,31 @@
                                 }
                             }
                             const alphaMedio = conteggio > 0 ? sommaAlpha / conteggio : 0;
-                            if (alphaMedio < 12) continue; 
+                            if (alphaMedio < 20) continue; // Taglia i rimasugli di pixel "sporchi"
 
                             const cx = Math.min(x + Math.floor(dimPunto / 2), width - 1);
                             const cy = Math.min(y + Math.floor(dimPunto / 2), height - 1);
                             const idx = (cy * width + cx) * 4;
-                            const r = pixels[idx], g = pixels[idx+1], b = pixels[idx+2];
 
-                            if (alphaMedio > 232) {
-                                ctx.fillStyle = `rgba(${r},${g},${b},1)`;
-                                ctx.fillRect(x, y, Math.min(dimPunto, width - x), Math.min(dimPunto, height - y));
-                            } else {
-                                const raggio = (dimPunto / 2.0) * Math.sqrt(alphaMedio / 255.0);
-                                ctx.beginPath();
-                                ctx.arc(x + dimPunto/2, y + dimPunto/2, Math.max(0.1, raggio), 0, Math.PI * 2);
-                                ctx.fillStyle = `rgba(${r},${g},${b},1)`;
-                                ctx.fill();
-                            }
+                            // Se la zona supera la soglia massima calcolata, scala la dimensione del punto geometrico
+                            const raggio = (dimPunto / 2.0) * Math.sqrt(alphaMedio / 255.0);
+                            ctx.beginPath();
+                            ctx.arc(x + dimPunto/2, y + dimPunto/2, Math.max(0.1, raggio), 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(${pixels[idx]},${pixels[idx+1]},${pixels[idx+2]},1)`;
+                            ctx.fill();
                         }
                     }
                 }
 
                 const link = document.createElement('a');
-                link.download = 'dtf_halftone_ready.png';
+                link.download = 'dtf_halftone_bilanciato.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
 
-                status.innerText = "File Halftone pronto e scaricato!";
+                status.innerText = "File Halftone ottimizzato scaricato!";
                 btnElabora.disabled = false;
-
             } catch (err) {
-                console.error(err);
-                status.innerText = "Errore durante la generazione dei mezzitoni.";
+                status.innerText = "Errore nell'elaborazione.";
                 btnElabora.disabled = false;
             }
         }, 50);
